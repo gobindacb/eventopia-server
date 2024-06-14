@@ -12,7 +12,7 @@ const corsOptions = {
     origin: [
         'http://localhost:5173',
         'http://localhost:5174',
-        ''
+        'https://eventopia-a3a2c.web.app'
     ],
     credentials: true,
     optionSuccessStatus: 200,
@@ -38,6 +38,7 @@ async function run() {
 
         const userCollection = client.db('eventopia').collection('users')
         const eventsCollection = client.db('eventopia').collection('events')
+        const bookingsCollection = client.db('eventopia').collection('bookings')
 
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
@@ -109,7 +110,7 @@ async function run() {
             res.send(result);
         })
 
-        // update or edit a package by id with admin
+        // update or edit a event
         app.patch('/events/:id', verifyToken, async (req, res) => {
             const item = req.body;
             const id = req.params.id;
@@ -142,10 +143,34 @@ async function run() {
             res.send(result);
         })
 
+        // bookings
+        // bookings collection post
+        app.post('/bookings', async (req, res) => {
+            const cartItem = req.body;
+            const result = await bookingsCollection.insertOne(cartItem);
+            res.send(result)
+        })
+
+        // get from wishlist
+        app.get('/bookings', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const result = await bookingsCollection.find(query).toArray();
+            res.send(result);
+        });
+
+        // delete from wishlist
+        app.delete('/bookings/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await bookingsCollection.deleteOne(query);
+            res.send(result);
+        })
+
 
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+        // await client.db("admin").command({ ping: 1 });
+        // console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
